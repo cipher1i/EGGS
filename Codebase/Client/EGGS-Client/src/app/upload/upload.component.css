@@ -1,0 +1,55 @@
+section
+{
+    display:inline-block;
+}
+
+h1
+{
+    font-size:xx-large;
+}
+
+div
+{
+    margin-top:30px;
+}
+
+label
+{
+    cursor:pointer;
+    margin-left:10px;
+}
+
+li
+{
+    color:grey;
+}
+
+span
+{
+    font-size:small;
+    color:grey;
+}
+
+.inputfile + button
+{
+    box-shadow:3px 3px 3px 0px rgba(0,0,0,0.2);
+    margin-right:10px;
+}
+
+.inputfile
+{
+    width:0.1px;
+    height:0.1px;
+    opacity:0;
+    overflow:hidden;
+    position:absolute;
+    z-index:-1;
+}
+
+.upload
+{
+    font-weight:bold;
+    color:#28a745;
+    margin-left: 15px;
+    line-height: 36px;
+}

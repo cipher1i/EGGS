@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30225.117
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EGGS-API", "EGGS-API\EGGS-API.csproj", "{3A0C030B-A489-454B-A6EF-D50B4FE62283}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A0C030B-A489-454B-A6EF-D50B4FE62283}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A0C030B-A489-454B-A6EF-D50B4FE62283}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A0C030B-A489-454B-A6EF-D50B4FE62283}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A0C030B-A489-454B-A6EF-D50B4FE62283}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {87514C31-E79C-40CA-A2D0-3ECAAFE13029}
+	EndGlobalSection
+EndGlobal

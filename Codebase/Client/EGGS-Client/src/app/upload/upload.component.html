@@ -1,0 +1,31 @@
+<section>
+    <h1>Welcome to EGGS</h1>
+    <p>EGGS stands for EGG Skrambler and we scramble your source code.</p>
+    <p>Our service guarantees the security of your codebase with our</p>
+    <p>state of the art encryption software.</p>
+    <div>
+        <input type="file" #inputFile id="picker" class="inputfile" (change)="GetData(inputFile)" webkitDirectory multiple/>
+        <input type="button" id="submit" class="inputfile" (click)="Submit()"/>
+        <button mat-raised-button [color]="matcolor">
+            <mat-icon aria-hidden="false" aria-label="folder icon">folder</mat-icon>
+            <label [for]="labelfor">{{labeltxt}}</label>
+        </button>
+    </div>
+    
+    <div class="col-md-4">
+        <span class="upload" *ngIf="progress > 0">
+            {{progress}}%
+        </span>
+    </div>
+    <span class="upload" *ngIf="message">
+        {{message}}
+    </span>
+
+    <ul *ngIf="status === true">
+        <li *ngFor="let file of dir">
+            <span>{{file.webkitRelativePath}}</span>
+        </li>
+    </ul>
+    <span *ngIf="dir.length > 0">{{dir.length}} files</span>
+</section>
+
