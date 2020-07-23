@@ -1,16 +1,27 @@
+main
+{
+    display:flex;
+    justify-content:center;
+}
+
+header
+{
+    margin-right:20px;
+}
+
 section
 {
     display:inline-block;
 }
 
+form
+{
+    margin-top:30px;
+}
+
 h1
 {
     font-size:xx-large;
-}
-
-div
-{
-    margin-top:30px;
 }
 
 label
@@ -30,13 +41,13 @@ span
     color:grey;
 }
 
-.inputfile + button
+.dirInput + button
 {
     box-shadow:3px 3px 3px 0px rgba(0,0,0,0.2);
     margin-right:10px;
 }
 
-.inputfile
+.dirInput
 {
     width:0.1px;
     height:0.1px;
@@ -46,7 +57,14 @@ span
     z-index:-1;
 }
 
-.upload
+.upload-loading
+{
+    color:grey;
+    margin-left:15px;
+    line-height:36px;
+}
+
+.upload-finished
 {
     font-weight:bold;
     color:#28a745;

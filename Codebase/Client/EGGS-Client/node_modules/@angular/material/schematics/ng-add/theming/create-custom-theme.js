@@ -1,3 +1,4 @@
+"use strict";
 /**
  * @license
  * Copyright Google LLC All Rights Reserved.
@@ -5,20 +6,11 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-(function (factory) {
-    if (typeof module === "object" && typeof module.exports === "object") {
-        var v = factory(require, exports);
-        if (v !== undefined) module.exports = v;
-    }
-    else if (typeof define === "function" && define.amd) {
-        define("@angular/material/schematics/ng-add/theming/create-custom-theme", ["require", "exports"], factory);
-    }
-})(function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /** Create custom theme for the given application configuration. */
-    function createCustomTheme(name = 'app') {
-        return `
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createCustomTheme = void 0;
+/** Create custom theme for the given application configuration. */
+function createCustomTheme(name = 'app') {
+    return `
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
 @import '~@angular/material/theming';
@@ -38,8 +30,15 @@ $${name}-accent: mat-palette($mat-pink, A200, A100, A400);
 // The warn palette is optional (defaults to red).
 $${name}-warn: mat-palette($mat-red);
 
-// Create the theme object (a Sass map containing all of the palettes).
-$${name}-theme: mat-light-theme($${name}-primary, $${name}-accent, $${name}-warn);
+// Create the theme object. A theme consists of configurations for individual
+// theming systems such as "color" or "typography".
+$${name}-theme: mat-light-theme((
+  color: (
+    primary: $${name}-primary,
+    accent: $${name}-accent,
+    warn: $${name}-warn,
+  )
+));
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
@@ -47,7 +46,6 @@ $${name}-theme: mat-light-theme($${name}-primary, $${name}-accent, $${name}-warn
 @include angular-material-theme($${name}-theme);
 
 `;
-    }
-    exports.createCustomTheme = createCustomTheme;
-});
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY3JlYXRlLWN1c3RvbS10aGVtZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uLy4uLy4uLy4uLy4uL3NyYy9tYXRlcmlhbC9zY2hlbWF0aWNzL25nLWFkZC90aGVtaW5nL2NyZWF0ZS1jdXN0b20tdGhlbWUudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7Ozs7OztHQU1HOzs7Ozs7Ozs7Ozs7SUFFSCxtRUFBbUU7SUFDbkUsU0FBZ0IsaUJBQWlCLENBQUMsT0FBZSxLQUFLO1FBQ3RELE9BQU87Ozs7Ozs7Ozs7Ozs7O0dBY0osSUFBSTtHQUNKLElBQUk7OztHQUdKLElBQUk7OztHQUdKLElBQUksNEJBQTRCLElBQUksY0FBYyxJQUFJLGFBQWEsSUFBSTs7Ozs7bUNBS3ZDLElBQUk7O0NBRXRDLENBQUM7SUFDRixDQUFDO0lBOUJELDhDQThCQyIsInNvdXJjZXNDb250ZW50IjpbIi8qKlxuICogQGxpY2Vuc2VcbiAqIENvcHlyaWdodCBHb29nbGUgTExDIEFsbCBSaWdodHMgUmVzZXJ2ZWQuXG4gKlxuICogVXNlIG9mIHRoaXMgc291cmNlIGNvZGUgaXMgZ292ZXJuZWQgYnkgYW4gTUlULXN0eWxlIGxpY2Vuc2UgdGhhdCBjYW4gYmVcbiAqIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgYXQgaHR0cHM6Ly9hbmd1bGFyLmlvL2xpY2Vuc2VcbiAqL1xuXG4vKiogQ3JlYXRlIGN1c3RvbSB0aGVtZSBmb3IgdGhlIGdpdmVuIGFwcGxpY2F0aW9uIGNvbmZpZ3VyYXRpb24uICovXG5leHBvcnQgZnVuY3Rpb24gY3JlYXRlQ3VzdG9tVGhlbWUobmFtZTogc3RyaW5nID0gJ2FwcCcpIHtcbnJldHVybiBgXG4vLyBDdXN0b20gVGhlbWluZyBmb3IgQW5ndWxhciBNYXRlcmlhbFxuLy8gRm9yIG1vcmUgaW5mb3JtYXRpb246IGh0dHBzOi8vbWF0ZXJpYWwuYW5ndWxhci5pby9ndWlkZS90aGVtaW5nXG5AaW1wb3J0ICd+QGFuZ3VsYXIvbWF0ZXJpYWwvdGhlbWluZyc7XG4vLyBQbHVzIGltcG9ydHMgZm9yIG90aGVyIGNvbXBvbmVudHMgaW4geW91ciBhcHAuXG5cbi8vIEluY2x1ZGUgdGhlIGNvbW1vbiBzdHlsZXMgZm9yIEFuZ3VsYXIgTWF0ZXJpYWwuIFdlIGluY2x1ZGUgdGhpcyBoZXJlIHNvIHRoYXQgeW91IG9ubHlcbi8vIGhhdmUgdG8gbG9hZCBhIHNpbmdsZSBjc3MgZmlsZSBmb3IgQW5ndWxhciBNYXRlcmlhbCBpbiB5b3VyIGFwcC5cbi8vIEJlIHN1cmUgdGhhdCB5b3Ugb25seSBldmVyIGluY2x1ZGUgdGhpcyBtaXhpbiBvbmNlIVxuQGluY2x1ZGUgbWF0LWNvcmUoKTtcblxuLy8gRGVmaW5lIHRoZSBwYWxldHRlcyBmb3IgeW91ciB0aGVtZSB1c2luZyB0aGUgTWF0ZXJpYWwgRGVzaWduIHBhbGV0dGVzIGF2YWlsYWJsZSBpbiBwYWxldHRlLnNjc3Ncbi8vIChpbXBvcnRlZCBhYm92ZSkuIEZvciBlYWNoIHBhbGV0dGUsIHlvdSBjYW4gb3B0aW9uYWxseSBzcGVjaWZ5IGEgZGVmYXVsdCwgbGlnaHRlciwgYW5kIGRhcmtlclxuLy8gaHVlLiBBdmFpbGFibGUgY29sb3IgcGFsZXR0ZXM6IGh0dHBzOi8vbWF0ZXJpYWwuaW8vZGVzaWduL2NvbG9yL1xuJCR7bmFtZX0tcHJpbWFyeTogbWF0LXBhbGV0dGUoJG1hdC1pbmRpZ28pO1xuJCR7bmFtZX0tYWNjZW50OiBtYXQtcGFsZXR0ZSgkbWF0LXBpbmssIEEyMDAsIEExMDAsIEE0MDApO1xuXG4vLyBUaGUgd2FybiBwYWxldHRlIGlzIG9wdGlvbmFsIChkZWZhdWx0cyB0byByZWQpLlxuJCR7bmFtZX0td2FybjogbWF0LXBhbGV0dGUoJG1hdC1yZWQpO1xuXG4vLyBDcmVhdGUgdGhlIHRoZW1lIG9iamVjdCAoYSBTYXNzIG1hcCBjb250YWluaW5nIGFsbCBvZiB0aGUgcGFsZXR0ZXMpLlxuJCR7bmFtZX0tdGhlbWU6IG1hdC1saWdodC10aGVtZSgkJHtuYW1lfS1wcmltYXJ5LCAkJHtuYW1lfS1hY2NlbnQsICQke25hbWV9LXdhcm4pO1xuXG4vLyBJbmNsdWRlIHRoZW1lIHN0eWxlcyBmb3IgY29yZSBhbmQgZWFjaCBjb21wb25lbnQgdXNlZCBpbiB5b3VyIGFwcC5cbi8vIEFsdGVybmF0aXZlbHksIHlvdSBjYW4gaW1wb3J0IGFuZCBAaW5jbHVkZSB0aGUgdGhlbWUgbWl4aW5zIGZvciBlYWNoIGNvbXBvbmVudFxuLy8gdGhhdCB5b3UgYXJlIHVzaW5nLlxuQGluY2x1ZGUgYW5ndWxhci1tYXRlcmlhbC10aGVtZSgkJHtuYW1lfS10aGVtZSk7XG5cbmA7XG59XG4iXX0=
+}
+exports.createCustomTheme = createCustomTheme;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY3JlYXRlLWN1c3RvbS10aGVtZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uLy4uLy4uLy4uLy4uL3NyYy9tYXRlcmlhbC9zY2hlbWF0aWNzL25nLWFkZC90aGVtaW5nL2NyZWF0ZS1jdXN0b20tdGhlbWUudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtBQUFBOzs7Ozs7R0FNRzs7O0FBRUgsbUVBQW1FO0FBQ25FLFNBQWdCLGlCQUFpQixDQUFDLE9BQWUsS0FBSztJQUN0RCxPQUFPOzs7Ozs7Ozs7Ozs7OztHQWNKLElBQUk7R0FDSixJQUFJOzs7R0FHSixJQUFJOzs7O0dBSUosSUFBSTs7Z0JBRVMsSUFBSTtlQUNMLElBQUk7YUFDTixJQUFJOzs7Ozs7O21DQU9rQixJQUFJOztDQUV0QyxDQUFDO0FBQ0YsQ0FBQztBQXJDRCw4Q0FxQ0MiLCJzb3VyY2VzQ29udGVudCI6WyIvKipcbiAqIEBsaWNlbnNlXG4gKiBDb3B5cmlnaHQgR29vZ2xlIExMQyBBbGwgUmlnaHRzIFJlc2VydmVkLlxuICpcbiAqIFVzZSBvZiB0aGlzIHNvdXJjZSBjb2RlIGlzIGdvdmVybmVkIGJ5IGFuIE1JVC1zdHlsZSBsaWNlbnNlIHRoYXQgY2FuIGJlXG4gKiBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGF0IGh0dHBzOi8vYW5ndWxhci5pby9saWNlbnNlXG4gKi9cblxuLyoqIENyZWF0ZSBjdXN0b20gdGhlbWUgZm9yIHRoZSBnaXZlbiBhcHBsaWNhdGlvbiBjb25maWd1cmF0aW9uLiAqL1xuZXhwb3J0IGZ1bmN0aW9uIGNyZWF0ZUN1c3RvbVRoZW1lKG5hbWU6IHN0cmluZyA9ICdhcHAnKSB7XG5yZXR1cm4gYFxuLy8gQ3VzdG9tIFRoZW1pbmcgZm9yIEFuZ3VsYXIgTWF0ZXJpYWxcbi8vIEZvciBtb3JlIGluZm9ybWF0aW9uOiBodHRwczovL21hdGVyaWFsLmFuZ3VsYXIuaW8vZ3VpZGUvdGhlbWluZ1xuQGltcG9ydCAnfkBhbmd1bGFyL21hdGVyaWFsL3RoZW1pbmcnO1xuLy8gUGx1cyBpbXBvcnRzIGZvciBvdGhlciBjb21wb25lbnRzIGluIHlvdXIgYXBwLlxuXG4vLyBJbmNsdWRlIHRoZSBjb21tb24gc3R5bGVzIGZvciBBbmd1bGFyIE1hdGVyaWFsLiBXZSBpbmNsdWRlIHRoaXMgaGVyZSBzbyB0aGF0IHlvdSBvbmx5XG4vLyBoYXZlIHRvIGxvYWQgYSBzaW5nbGUgY3NzIGZpbGUgZm9yIEFuZ3VsYXIgTWF0ZXJpYWwgaW4geW91ciBhcHAuXG4vLyBCZSBzdXJlIHRoYXQgeW91IG9ubHkgZXZlciBpbmNsdWRlIHRoaXMgbWl4aW4gb25jZSFcbkBpbmNsdWRlIG1hdC1jb3JlKCk7XG5cbi8vIERlZmluZSB0aGUgcGFsZXR0ZXMgZm9yIHlvdXIgdGhlbWUgdXNpbmcgdGhlIE1hdGVyaWFsIERlc2lnbiBwYWxldHRlcyBhdmFpbGFibGUgaW4gcGFsZXR0ZS5zY3NzXG4vLyAoaW1wb3J0ZWQgYWJvdmUpLiBGb3IgZWFjaCBwYWxldHRlLCB5b3UgY2FuIG9wdGlvbmFsbHkgc3BlY2lmeSBhIGRlZmF1bHQsIGxpZ2h0ZXIsIGFuZCBkYXJrZXJcbi8vIGh1ZS4gQXZhaWxhYmxlIGNvbG9yIHBhbGV0dGVzOiBodHRwczovL21hdGVyaWFsLmlvL2Rlc2lnbi9jb2xvci9cbiQke25hbWV9LXByaW1hcnk6IG1hdC1wYWxldHRlKCRtYXQtaW5kaWdvKTtcbiQke25hbWV9LWFjY2VudDogbWF0LXBhbGV0dGUoJG1hdC1waW5rLCBBMjAwLCBBMTAwLCBBNDAwKTtcblxuLy8gVGhlIHdhcm4gcGFsZXR0ZSBpcyBvcHRpb25hbCAoZGVmYXVsdHMgdG8gcmVkKS5cbiQke25hbWV9LXdhcm46IG1hdC1wYWxldHRlKCRtYXQtcmVkKTtcblxuLy8gQ3JlYXRlIHRoZSB0aGVtZSBvYmplY3QuIEEgdGhlbWUgY29uc2lzdHMgb2YgY29uZmlndXJhdGlvbnMgZm9yIGluZGl2aWR1YWxcbi8vIHRoZW1pbmcgc3lzdGVtcyBzdWNoIGFzIFwiY29sb3JcIiBvciBcInR5cG9ncmFwaHlcIi5cbiQke25hbWV9LXRoZW1lOiBtYXQtbGlnaHQtdGhlbWUoKFxuICBjb2xvcjogKFxuICAgIHByaW1hcnk6ICQke25hbWV9LXByaW1hcnksXG4gICAgYWNjZW50OiAkJHtuYW1lfS1hY2NlbnQsXG4gICAgd2FybjogJCR7bmFtZX0td2FybixcbiAgKVxuKSk7XG5cbi8vIEluY2x1ZGUgdGhlbWUgc3R5bGVzIGZvciBjb3JlIGFuZCBlYWNoIGNvbXBvbmVudCB1c2VkIGluIHlvdXIgYXBwLlxuLy8gQWx0ZXJuYXRpdmVseSwgeW91IGNhbiBpbXBvcnQgYW5kIEBpbmNsdWRlIHRoZSB0aGVtZSBtaXhpbnMgZm9yIGVhY2ggY29tcG9uZW50XG4vLyB0aGF0IHlvdSBhcmUgdXNpbmcuXG5AaW5jbHVkZSBhbmd1bGFyLW1hdGVyaWFsLXRoZW1lKCQke25hbWV9LXRoZW1lKTtcblxuYDtcbn1cbiJdfQ==

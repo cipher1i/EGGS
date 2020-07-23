@@ -26,7 +26,7 @@ var Rule = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Rule.prototype.applyWithProgram = function (sourceFile, program) {
-        var promiseTypes = new Set(["Promise"].concat(this.ruleArguments));
+        var promiseTypes = new Set(tslib_1.__spreadArrays(["Promise"], this.ruleArguments));
         return this.applyWithFunction(sourceFile, walk, promiseTypes, program.getTypeChecker());
     };
     /* tslint:disable:object-literal-sort-keys */
@@ -89,6 +89,6 @@ function containsType(type, predicate) {
     return bases !== undefined && bases.some(function (t) { return containsType(t, predicate); });
 }
 function isAsyncIterable(name) {
-    return name === "AsyncIterable" || name === "AsyncIterableIterator";
+    return (name === "AsyncIterable" || name === "AsyncIterableIterator" || name === "AsyncGenerator");
 }
 var templateObject_1, templateObject_2;

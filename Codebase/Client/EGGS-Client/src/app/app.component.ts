@@ -6,7 +6,6 @@ import { EventHandlerVars } from '@angular/compiler/src/compiler_util/expression
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-
 export class AppComponent {
   title = 'EGGS';
 }

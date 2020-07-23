@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using System.Text;
+using Domain.Models.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 
@@ -14,42 +14,83 @@ namespace EGGS_API.Controllers
     [ApiController]
     public class EGGSController : ControllerBase
     {
-        
         [HttpGet]
-        public IActionResult GetMe()
+        public IActionResult GetHome()
         {
             return Ok("Welcome to EGGS API!");
         }
 
         [HttpPost, DisableRequestSizeLimit]
-        public IActionResult Upload()
+        public IActionResult PostUpload()
         {
+            /*
+                *DECRYPTION
+                fileContent = EGGSUtility.Decrypt(fileContent);
+                using (FileStream fs = new FileStream(filePath, FileMode.Create))
+                {
+                    byte[] info = new UTF8Encoding(true).GetBytes(fileContent);
+                    fs.Write(info, 0, info.Length);
+                }
+            */
             try
             {
                 var files = Request.Form.Files;
-                var folder_name = Path.Combine("Resources", "Codebase");
-                var path_to_save = Path.Combine(Directory.GetCurrentDirectory(), folder_name);
-
                 if (files.Any(f => f.Length == 0))
                     return BadRequest();
 
+                var savePath = Path.Combine(Directory.GetCurrentDirectory() + "/../../..", "Resources");  //path to save files to after new directory created
+                if (!Directory.Exists(savePath))
+                    Directory.CreateDirectory(savePath);
+
+                Queue<string> names = new Queue<string>();
+                string contents = "";
                 foreach (var file in files)
                 {
-                    var file_name = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName;
-                    var full_path = Path.Combine(path_to_save, file_name.ToString());
-                    var db_path = Path.Combine(folder_name, file_name.ToString());
+                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName;
+                    names.Enqueue(fileName.ToString());
+                    var filePath = Path.Combine(savePath, fileName.ToString());
 
-                    using (var stream = new FileStream(full_path, FileMode.Create))
+                    using (FileStream fs = new FileStream(filePath, FileMode.Create))
                     {
-                        file.CopyTo(stream);
+                        file.CopyTo(fs);
                     }
                 }
 
-                return Ok("All the files were successfully uploaded.");
+                string fileContent = "";
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    foreach (var filePath in Directory.GetFiles(savePath))
+                    {
+                        contents = System.IO.File.ReadAllText(filePath);
+
+                        fileContent = EGGSUtility.Encrypt(filePath, contents);
+                        using (FileStream fs = new FileStream(filePath, FileMode.Create))
+                        {
+                            byte[] info = new UTF8Encoding(true).GetBytes(fileContent);
+                            fs.Write(info, 0, info.Length);
+                        }
+
+                        using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
+                        {
+                            if(names.Count > 0)
+                            {
+                                var f = archive.CreateEntry(names.Dequeue());
+                                using (var sw = new StreamWriter(f.Open()))
+                                {
+                                    sw.Write(fileContent);
+                                }
+                            }
+                        }
+                    }
+
+                    ZipFile.CreateFromDirectory(savePath, savePath+"/../Directory0.zip");
+
+                    return File(ms.ToArray(), "application/zip", "Directory.zip");
+                }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                return StatusCode(500, $"Internal server error: {e.Message}");
+                return StatusCode(500, $"Internal server error: {e}");
             }
         }
     }

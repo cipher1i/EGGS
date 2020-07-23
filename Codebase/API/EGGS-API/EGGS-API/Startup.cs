@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Access.Entities;
+using Domain.Interfaces;
+using Domain.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -44,8 +48,10 @@ namespace EGGS_API
                 o.MemoryBufferThreshold = int.MaxValue;
             });
 
-            services.AddControllers();
+            services.AddControllers(options => { options.RespectBrowserAcceptHeader = true; }).AddNewtonsoftJson();
 
+            services.AddDbContext<EGGSDBContext>(options => options.UseSqlServer(Configuration.GetConnectionString("EGGSDS")));
+            services.AddScoped<IEGGSRepositoryUser, UserRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,7 +69,7 @@ namespace EGGS_API
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions()
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Resources")),
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory() + "/../../..", @"Resources")),
                 RequestPath = new PathString("/Resources")
             });
 

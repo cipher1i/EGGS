@@ -1,6 +1,6 @@
 using System;
 
-namespace EGGS_API
+namespace Domain
 {
     public class WeatherForecast
     {

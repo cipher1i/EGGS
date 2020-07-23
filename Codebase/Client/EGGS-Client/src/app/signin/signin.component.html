@@ -1,0 +1,33 @@
+<!--signin form-->
+<main style="text-align:right;padding:50px;background-color:aquamarine;box-shadow:1px -1px 2px 0px rgba(0,0,0,0.2);">
+    <span style="margin-top:3%; font-size:16pt;text-align:right;float:left;margin-left:20%;">
+        Psst! My developers told me not to speak with strangers
+        <br/><br/>
+        Introduce yourself
+    </span>
+    <mat-card style="display:inline-block;text-align:left;border-radius:50px;padding:35px 35px 20px 35px;">
+        <mat-card-content>
+            <form [formGroup]="signinFG" (ngSubmit)="onSubmit()" novalidate>
+                <mat-form-field appearance="outline" hideRequiredMarker>
+                    <mat-label>Email</mat-label>
+                    <input matInput type="email" formControlName="emailFC" required/>
+                    <mat-error *ngIf="signinFG.controls['emailFC'].hasError('email')">Please enter a valid email</mat-error>
+                    <mat-error *ngIf="signinFG.controls['emailFC'].hasError('required')">You're missing something</mat-error>
+                </mat-form-field>
+                <br/><br *ngIf="(signinFG.controls['emailFC'].hasError('required') || signinFG.controls['emailFC'].hasError('email')) && signinFG.controls['emailFC'].touched"/>
+                <mat-form-field appearance="outline" hideRequiredMarker>
+                    <mat-label>Password</mat-label>
+                    <input matInput [type]="hide ? 'password' : 'text'" formControlName="passwordFC" required/>
+                    <button type="button" mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+                        <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </button>
+                    <mat-error>Please enter a password</mat-error>
+                </mat-form-field>
+
+                <div [hidden]="true">
+                    <button mat-raised-button color="primary" [disabled]="!signinFG.valid">Submit</button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</main>

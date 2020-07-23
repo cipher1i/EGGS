@@ -1,0 +1,12 @@
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\bin\Debug\netcoreapp3.1\Access.deps.json
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\bin\Debug\netcoreapp3.1\Access.dll
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\obj\Debug\netcoreapp3.1\Access.csprojAssemblyReference.cache
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\obj\Debug\netcoreapp3.1\Access.AssemblyInfoInputs.cache
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\obj\Debug\netcoreapp3.1\Access.AssemblyInfo.cs
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\bin\Debug\netcoreapp3.1\Access.runtimeconfig.json
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\bin\Debug\netcoreapp3.1\Access.runtimeconfig.dev.json
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\obj\Debug\netcoreapp3.1\Access.genruntimeconfig.cache
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\bin\Debug\netcoreapp3.1\Access.pdb
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\obj\Debug\netcoreapp3.1\Access.csproj.CoreCompileInputs.cache
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\obj\Debug\netcoreapp3.1\Access.dll
+C:\Users\GIG\Lab\EGGS\Codebase\API\EGGS-API\Access\obj\Debug\netcoreapp3.1\Access.pdb
