@@ -12,15 +12,15 @@ import { AppComponent } from './app.component';
 import { UploadComponent } from './upload/upload.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SigninComponent } from './signin/signin.component';
-import { NavbarComponent } from './navbar/navbar.component';
 import { AppRoutingModule } from './app-routing.module';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     UploadComponent,
     SigninComponent,
-    NavbarComponent
+    DashboardComponent
   ],
   imports: [
     BrowserModule,

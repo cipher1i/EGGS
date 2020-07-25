@@ -1,0 +1,10 @@
+nav{
+    position:fixed;
+    top:20px;
+    right:35px;
+}
+
+mat-icon{
+    transform:scale(1.5);
+    color:rgb(216, 177, 142);
+}

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormGroupDirective, NgForm, FormControl, Validators } from '@angular/forms';
 import { HttpClient, HttpEventType, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 //import { ErrorStateMatcher } from '@angular/material/core';
 
 @Component({
@@ -11,26 +12,34 @@ import { HttpClient, HttpEventType, HttpHeaders } from '@angular/common/http';
 
 export class SigninComponent implements OnInit {
 
-  hide: boolean = true;
-  signinFG = new FormGroup({
+  hide : boolean = true;
+  session : boolean = false;
+  header : string = "Psst! My developers told me not to speak with strangers";
+  message : string = "Introduce yourself";
+  signinFG : FormGroup = new FormGroup({
     emailFC: new FormControl('', [Validators.required, Validators.email]),
     passwordFC: new FormControl('', [Validators.required])
   });
 
-  constructor(private http: HttpClient) { }
+  constructor(private http : HttpClient, private router : Router) { }
 
-  ngOnInit(): void { }
+  ngOnInit() : void { }
 
-  onSubmit()
+  onSubmit() : void
   {
-    const url :string = 'https://localhost:44331/api/Auth';
-    const formData = new FormData();
+    const url : string = 'https://localhost:44331/api/Auth';
+    const formData : FormData = new FormData();
     formData.append("username", this.signinFG.controls['emailFC'].value);
     formData.append("password", this.signinFG.controls['passwordFC'].value);
     this.http.post(url, formData)
     .subscribe(
-      result => { console.log('POST successful value returned in body', result); },
-      error => { console.log('POST in error', error); },
+      result => { 
+        sessionStorage.setItem('user', JSON.stringify(result)); 
+        console.log('POST successful value returned in body', result); 
+        this.session = true; 
+        setTimeout(()=>{this.router.navigate(['dash']);}, 3000);
+      },
+      error => { console.log('POST in error', error); this.header = "OOPs! Something's wrong. Try again later."; this.message = ""; },
       () => { console.log('POST completed'); }
     );
   }

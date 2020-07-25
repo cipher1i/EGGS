@@ -1,6 +1,8 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { saveAs } from 'file-saver';
+
 import { UploadService } from '../SERVICES/upload/upload.service';
 import { FileDetector } from 'protractor';
 import { ExecFileOptions } from 'child_process';
@@ -16,21 +18,21 @@ import { type } from 'os';
 export class UploadComponent implements OnInit {
 
   btnColor : string = "primary";
-  icon: string = "folder";
+  icon : string = "folder";
   labelTxt : string = "Upload My Code";
   labelFor : string = "picker";
   files : FileList;
   gotFiles : boolean = false;
-  public uploadProg: number;
-  public message: string;
+  public uploadProg : number;
+  public message : string;
   
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http : HttpClient, private router : Router) { }
 
-  ngOnInit(): void {}
+  ngOnInit() : void {}
 
-  checkUserCredentials()
+  checkUserCredentials() : boolean
   {
-    if(sessionStorage.getItem("User") == null)
+    if(!sessionStorage.getItem('user'))
     {
       this.router.navigate(['signin']);
       return false;
@@ -38,7 +40,7 @@ export class UploadComponent implements OnInit {
     return true;
   }
 
-  getFolder(directory : any)
+  getFolder(directory : any) : void
   {
     this.files = directory.files;
     this.labelTxt = this.files.length > 0 ? directory.files[0].webkitRelativePath.split('/')[0] : "Upload My Code";
@@ -54,27 +56,28 @@ export class UploadComponent implements OnInit {
     }
   }
 
-  sleep(ms : number) 
+  //Promise<unknown>
+  sleep(ms : number) : Promise<NodeJS.Timeout>
   {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   @Output() public onUploadFinished = new EventEmitter();
-  public upload(){
-
+  public upload() : any
+  {
     if(this.files.length === 0) 
       return;
 
-    const formData = new FormData();
+    const formData : FormData = new FormData();
     
     Array.from(this.files).map((file, index) =>{
       return formData.append('file'+index, file, file.name);
     });
     
-    this.http.post('https://localhost:44336/api/EGGS', formData, {reportProgress: true, observe: 'events'}).subscribe(event =>{
+    this.http.post('https://localhost:44331/api/EGGS/upload', formData, {reportProgress: true, observe: 'events'}).subscribe(event =>{
       if(event.type === HttpEventType.UploadProgress)
         this.uploadProg = Math.round((event.loaded / event.total)*this.files.length);
-      else if(this.uploadProg == this.files.length)
+      if(this.uploadProg == this.files.length)
       {
         this.gotFiles = false;
         this.btnColor = "";
@@ -86,9 +89,13 @@ export class UploadComponent implements OnInit {
     });
   }
 
-  public download()
+  public download() : void
   {
-    alert('downloading');
+    this.http.get('https://localhost:44331/api/EGGS/download', { responseType: 'blob'})
+    .subscribe(success => {
+      var blob : Blob = new Blob([success], {type: 'application/zip'});
+      saveAs(blob,'EGGS');
+    });
   }
   
 }

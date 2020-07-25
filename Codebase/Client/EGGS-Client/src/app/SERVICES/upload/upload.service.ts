@@ -8,10 +8,5 @@ import { Observable } from 'rxjs';
 
 export class UploadService {
 
-  constructor(private http: HttpClient) { }
-
-  postDirectory()
-  {
-    //return this.http.post
-  }
+  constructor(private http : HttpClient) { }
 }

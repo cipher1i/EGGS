@@ -4,6 +4,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using Domain.Extensions;
 using Domain.Models.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
@@ -14,13 +16,23 @@ namespace EGGS_API.Controllers
     [ApiController]
     public class EGGSController : ControllerBase
     {
+        private MemoryStream memStream = new MemoryStream();
+
         [HttpGet]
         public IActionResult GetHome()
         {
             return Ok("Welcome to EGGS API!");
         }
 
-        [HttpPost, DisableRequestSizeLimit]
+        [HttpGet("download"), DisableRequestSizeLimit]
+        public async Task<FileStream> GetDownload()
+        {
+            var file = Path.Combine(Directory.GetCurrentDirectory() + "/../../../Data", "EGGS.zip");
+            
+            return new FileStream(file, FileMode.Open, FileAccess.Read);
+        }
+
+        [HttpPost("upload"), DisableRequestSizeLimit]
         public IActionResult PostUpload()
         {
             /*
@@ -49,7 +61,7 @@ namespace EGGS_API.Controllers
                     var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName;
                     names.Enqueue(fileName.ToString());
                     var filePath = Path.Combine(savePath, fileName.ToString());
-
+                    
                     using (FileStream fs = new FileStream(filePath, FileMode.Create))
                     {
                         file.CopyTo(fs);
@@ -83,9 +95,11 @@ namespace EGGS_API.Controllers
                         }
                     }
 
-                    ZipFile.CreateFromDirectory(savePath, savePath+"/../Directory0.zip");
-
-                    return File(ms.ToArray(), "application/zip", "Directory.zip");
+                    ZipFile.CreateFromDirectory(savePath, savePath+"/../Data/EGGS.zip");
+                    memStream = ms;
+                    return Ok();
+                    //return File(ms.ToArray(), "application/zip", "Directory.zip");
+                    //return new FileStream(Path.Combine(savePath, "Directory0.zip"), FileMode.Open, FileAccess.Read);
                 }
             }
             catch (Exception e)

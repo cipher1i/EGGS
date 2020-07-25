@@ -1,11 +1,15 @@
 <!--signin form-->
-<main style="text-align:right;padding:50px;background-color:aquamarine;box-shadow:1px -1px 2px 0px rgba(0,0,0,0.2);">
-    <span style="margin-top:3%; font-size:16pt;text-align:right;float:left;margin-left:20%;">
-        Psst! My developers told me not to speak with strangers
-        <br/><br/>
-        Introduce yourself
+<main>
+    <span *ngIf="!session" class="message">
+        {{header}}<br/><br/>{{message}}
     </span>
-    <mat-card style="display:inline-block;text-align:left;border-radius:50px;padding:35px 35px 20px 35px;">
+    <mat-card *ngIf="session" id="fade" class="card success">
+        <section>
+            <mat-icon style="transform:scale(2);color:white;">mood</mat-icon>
+        </section>
+        <span>Hello!</span>
+    </mat-card>
+    <mat-card *ngIf="!session" class="card">
         <mat-card-content>
             <form [formGroup]="signinFG" (ngSubmit)="onSubmit()" novalidate>
                 <mat-form-field appearance="outline" hideRequiredMarker>
