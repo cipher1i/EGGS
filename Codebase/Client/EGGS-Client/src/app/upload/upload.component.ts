@@ -63,6 +63,7 @@ export class UploadComponent implements OnInit {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  userKey : any;
   @Output() public onUploadFinished = new EventEmitter();
   public upload() : any
   {
@@ -93,15 +94,18 @@ export class UploadComponent implements OnInit {
       if(event.type === HttpEventType.Response)
       {
         console.log('response body: '+event.body);
+        this.userKey = event.body;
       }
     });
   }
 
   public download() : void
   {
-    this.http.get('https://localhost:44331/api/EGGS/download', { responseType: 'blob'})
+    this.http.get('https://localhost:44331/api/EGGS/download', { params: { userKey: this.userKey }, responseType: 'blob' })
     .subscribe(success => {
       var blob : Blob = new Blob([success], {type: 'application/zip'});
+      this.http.delete('https://localhost:44331/api/EGGS', {params: { userKey: this.userKey } })
+      .subscribe();
       saveAs(blob,'EGGS');
     });
   }

@@ -26,10 +26,10 @@ namespace EGGS_API.Controllers
         }
 
         [HttpGet("download"), DisableRequestSizeLimit]
-        public FileStream GetDownload()
+        public FileStream GetDownload([FromQuery] string userKey)
         {
             //TODO : Get the response body from upload on the client end.
-            var file = Path.Combine(Directory.GetCurrentDirectory() + "/../../../Data", "EGG-"+".zip");
+            var file = Path.Combine(Directory.GetCurrentDirectory() + "/../../../Data", "EGG-"+ userKey +".zip");
             return new FileStream(file, FileMode.Open, FileAccess.Read);
         }
 
@@ -113,6 +113,14 @@ namespace EGGS_API.Controllers
             {
                 return StatusCode(500, $"Internal server error: {e}");
             }
+        }
+
+        [HttpDelete]
+        public IActionResult DeleteData([FromQuery] string userKey)
+        {
+            var file = Path.Combine(Directory.GetCurrentDirectory() + "/../../../Data", "EGG-" + userKey + ".zip");
+            System.IO.File.Delete(file);
+            return Ok();
         }
     }
 }
