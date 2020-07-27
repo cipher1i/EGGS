@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using System.Text;
 using System.IO;
+using System.IO.Compression;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Domain.Extensions
 {

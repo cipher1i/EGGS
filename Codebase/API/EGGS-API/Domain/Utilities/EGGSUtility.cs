@@ -7,7 +7,7 @@ namespace Domain.Models.Utilities
 {
     public static class EGGSUtility
     {
-        public static string Encrypt(string filePath, string contents)
+        public static string Encrypt(string contents)
         {
             Hashtable hashTable = new Hashtable(contents.Length);
 
@@ -35,8 +35,6 @@ namespace Domain.Models.Utilities
                 i++;
             }
 
-
-            var fileName = filePath.Split('/', '\\');
             string fileContent = "";
             foreach (DictionaryEntry ht in hashTable)
                 fileContent += ht.Value + "-";

@@ -1,7 +1,8 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { HttpClient, HttpEventType } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType, HttpRequest } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { saveAs } from 'file-saver';
+import { filter, map } from 'rxjs/operators';
 
 import { UploadService } from '../SERVICES/upload/upload.service';
 import { FileDetector } from 'protractor';
@@ -56,7 +57,7 @@ export class UploadComponent implements OnInit {
     }
   }
 
-  //Promise<unknown>
+  //Originally was Promise<unknown>
   sleep(ms : number) : Promise<NodeJS.Timeout>
   {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -74,17 +75,24 @@ export class UploadComponent implements OnInit {
       return formData.append('file'+index, file, file.name);
     });
     
-    this.http.post('https://localhost:44331/api/EGGS/upload', formData, {reportProgress: true, observe: 'events'}).subscribe(event =>{
+    this.http.post('https://localhost:44331/api/EGGS/upload', formData, {reportProgress: true, observe: 'events', responseType: 'json'})
+    .subscribe(event =>{
       if(event.type === HttpEventType.UploadProgress)
-        this.uploadProg = Math.round((event.loaded / event.total)*this.files.length);
-      if(this.uploadProg == this.files.length)
       {
-        this.gotFiles = false;
-        this.btnColor = "";
-        this.icon = "cloud_download";
-        this.labelFor = "download";
-        this.labelTxt = "Download";
-        this.onUploadFinished.emit();
+        this.uploadProg = Math.round((event.loaded / event.total)*this.files.length);
+        if(this.uploadProg == this.files.length)
+        {
+          this.gotFiles = false;
+          this.btnColor = "";
+          this.icon = "cloud_download";
+          this.labelFor = "download";
+          this.labelTxt = "Download";
+          this.onUploadFinished.emit();
+        }
+      }
+      if(event.type === HttpEventType.Response)
+      {
+        console.log('response body: '+event.body);
       }
     });
   }
@@ -97,5 +105,4 @@ export class UploadComponent implements OnInit {
       saveAs(blob,'EGGS');
     });
   }
-  
 }

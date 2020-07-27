@@ -6,8 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.Extensions;
+using Domain.Models;
 using Domain.Models.Utilities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Net.Http.Headers;
 
 namespace EGGS_API.Controllers
@@ -16,8 +19,6 @@ namespace EGGS_API.Controllers
     [ApiController]
     public class EGGSController : ControllerBase
     {
-        private MemoryStream memStream = new MemoryStream();
-
         [HttpGet]
         public IActionResult GetHome()
         {
@@ -25,82 +26,88 @@ namespace EGGS_API.Controllers
         }
 
         [HttpGet("download"), DisableRequestSizeLimit]
-        public async Task<FileStream> GetDownload()
+        public FileStream GetDownload()
         {
-            var file = Path.Combine(Directory.GetCurrentDirectory() + "/../../../Data", "EGGS.zip");
-            
+            //TODO : Get the response body from upload on the client end.
+            var file = Path.Combine(Directory.GetCurrentDirectory() + "/../../../Data", "EGG-"+".zip");
             return new FileStream(file, FileMode.Open, FileAccess.Read);
         }
 
+        /*
+            DECRYPTION
+            fileContent = EGGSUtility.Decrypt(fileContent);
+            using (FileStream fs = new FileStream(filePath, FileMode.Create))
+            {
+                byte[] info = new UTF8Encoding(true).GetBytes(fileContent);
+                fs.Write(info, 0, info.Length);
+            }
+        */
         [HttpPost("upload"), DisableRequestSizeLimit]
         public IActionResult PostUpload()
         {
-            /*
-                *DECRYPTION
-                fileContent = EGGSUtility.Decrypt(fileContent);
-                using (FileStream fs = new FileStream(filePath, FileMode.Create))
-                {
-                    byte[] info = new UTF8Encoding(true).GetBytes(fileContent);
-                    fs.Write(info, 0, info.Length);
-                }
-            */
             try
             {
                 var files = Request.Form.Files;
                 if (files.Any(f => f.Length == 0))
                     return BadRequest();
+                
+                var path = Path.Combine(Directory.GetCurrentDirectory() + "/../../..", "Resources");  //path to save files to after new directory created
+                int dirIndex = 0;
+                string savePath = "";
+                do
+                {
+                    savePath = Path.Combine(path, dirIndex.ToString());
+                    dirIndex++;
+                } while (Directory.Exists(savePath));
+                Directory.CreateDirectory(savePath);
 
-                var savePath = Path.Combine(Directory.GetCurrentDirectory() + "/../../..", "Resources");  //path to save files to after new directory created
-                if (!Directory.Exists(savePath))
-                    Directory.CreateDirectory(savePath);
-
-                Queue<string> names = new Queue<string>();
-                string contents = "";
                 foreach (var file in files)
                 {
-                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName;
-                    names.Enqueue(fileName.ToString());
-                    var filePath = Path.Combine(savePath, fileName.ToString());
-                    
+                    var contents = file.ReadAsList();
+                    string encryptedContent = "";
+                    foreach(var line in contents)
+                        encryptedContent += line + '\n';
+
+                    encryptedContent = EGGSUtility.Encrypt(encryptedContent);
+                    var filePath = Path.Combine(savePath, file.FileName);
                     using (FileStream fs = new FileStream(filePath, FileMode.Create))
                     {
-                        file.CopyTo(fs);
+                        byte[] data = new UTF8Encoding(true).GetBytes(encryptedContent);
+                        fs.Write(data, 0, data.Length);
                     }
                 }
 
-                string fileContent = "";
-                using (MemoryStream ms = new MemoryStream())
+                string randUser = "";
+                do
                 {
-                    foreach (var filePath in Directory.GetFiles(savePath))
+                    int ascii = 0;
+                    randUser = "";
+                    Random random = new Random();
+                    for (int i = 0; i < 10; i++)
                     {
-                        contents = System.IO.File.ReadAllText(filePath);
-
-                        fileContent = EGGSUtility.Encrypt(filePath, contents);
-                        using (FileStream fs = new FileStream(filePath, FileMode.Create))
+                        /* guaranteed between 0 and 2 so no default necessary */
+                        switch (random.Next(3))    //3 randoms to choose from per tuple
                         {
-                            byte[] info = new UTF8Encoding(true).GetBytes(fileContent);
-                            fs.Write(info, 0, info.Length);
+                            case 0:
+                                ascii = random.Next(48, 58);    //10 decimals possible
+                                break;
+                            case 1:
+                                ascii = random.Next(65, 91);    //26 uppercase possible
+                                break;
+                            case 2:
+                                ascii = random.Next(97, 123);   //26 lowercase possible
+                                break;
+                            default:    //keep ascii same
+                                break;
                         }
 
-                        using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
-                        {
-                            if(names.Count > 0)
-                            {
-                                var f = archive.CreateEntry(names.Dequeue());
-                                using (var sw = new StreamWriter(f.Open()))
-                                {
-                                    sw.Write(fileContent);
-                                }
-                            }
-                        }
+                        randUser += Convert.ToChar(ascii);
                     }
-
-                    ZipFile.CreateFromDirectory(savePath, savePath+"/../Data/EGGS.zip");
-                    memStream = ms;
-                    return Ok();
-                    //return File(ms.ToArray(), "application/zip", "Directory.zip");
-                    //return new FileStream(Path.Combine(savePath, "Directory0.zip"), FileMode.Open, FileAccess.Read);
-                }
+                } while (System.IO.File.Exists(Path.Combine(savePath, savePath + "/../../Data/EGG-" + randUser + ".zip")));
+ 
+                ZipFile.CreateFromDirectory(savePath, savePath + "/../../Data/EGG-"+randUser+".zip");
+                Directory.Delete(savePath, true);
+                return Ok(randUser);
             }
             catch (Exception e)
             {
