@@ -16,6 +16,7 @@ export class SigninComponent implements OnInit {
   session : boolean = false;
   header : string = "Psst! My developers told me not to speak with strangers";
   message : string = "Introduce yourself";
+  error : string = "";
   signinFG : FormGroup = new FormGroup({
     emailFC: new FormControl('', [Validators.required, Validators.email]),
     passwordFC: new FormControl('', [Validators.required])
@@ -34,12 +35,13 @@ export class SigninComponent implements OnInit {
     this.http.post(url, formData)
     .subscribe(
       result => { 
+        this.error = "";
         sessionStorage.setItem('user', JSON.stringify(result)); 
         console.log('POST successful value returned in body', result); 
         this.session = true; 
         setTimeout(()=>{this.router.navigate(['dash']);}, 3000);
       },
-      error => { console.log('POST in error', error); this.header = "OOPs! Something's wrong. Try again later."; this.message = ""; },
+      error => { console.log('POST in error', error); this.error = "OOP something's wrong!" },
       () => { console.log('POST completed'); }
     );
   }

@@ -7,11 +7,9 @@
     <!--Content-->
     <section>
         <!--Summary-->
-        <div>
+        <div style="width:490px;">
             <h1>Welcome to EGGS</h1>
-            <p>EGGS stands for EGG Skrambler and we scramble your source code.</p>
-            <p>Our service guarantees the security of your codebase with our</p>
-            <p>state of the art encryption software.</p>
+            <p style="line-height:2.1em;">{{primaryText}}</p>
         </div>
 
         <!--Interaction-->
@@ -19,18 +17,21 @@
             <input type="file" #DirInput id="picker" class="dirInput" (click)="checkUserCredentials()" (change)="getFolder(DirInput)" webkitDirectory multiple/>
             <input type="button" id="upload" class="dirInput" (click)="upload()"/>
             <input type="button" id="download" class="dirInput" (click)="download()"/>
-
-            <button mat-raised-button [color]="btnColor">
-                <mat-icon aria-hidden="false" aria-label="icon">folder</mat-icon>
+            <input type="button" id="clipboard" class="dirInput" [cdkCopyToClipboard]="copy()" (click)="showTooltip()"/>
+            
+            <button mat-raised-button [color]="btnColor" [title]="btnDescription">
+                <mat-icon aria-hidden="false" aria-label="icon">{{icon}}</mat-icon>
                 <label [for]="labelFor">{{labelTxt}}</label>
             </button>
-            
-            <span *ngIf="uploadProg > 0">{{uploadProg}} of </span>
-            <span *ngIf="files.length > 0">{{files.length}}</span>
+
+            <span *ngIf="uploadProg > 0 && !downloaded">{{uploadProg}} of </span>
+            <span *ngIf="files.length > 0 && !downloaded">{{files.length}} files</span>
+            <br/>
+            <span *ngIf="copied" id="fade" class="tooltip">Copied to clipboard</span>
         </form>
 
         <!--Results-->
-        <ul *ngIf="gotFiles === true">
+        <ul *ngIf="receivedFiles === true">
             <li *ngFor="let file of files">
                 <span>{{file.webkitRelativePath}}</span>
             </li>

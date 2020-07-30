@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Domain.Extensions
 {
-    public static class GenericExtensions
+    public static class FileExtensions
     {
         public static List<string> ReadAsList(this IFormFile file)
         {

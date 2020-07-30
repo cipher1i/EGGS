@@ -12,4 +12,9 @@
     <ProjectReference Include="..\Access\Access.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Factories\" />
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+
 </Project>

@@ -7,8 +7,12 @@ namespace Domain.Models.Utilities
 {
     public static class EGGSUtility
     {
-        public static string Encrypt(string contents)
+        public static string EncryptContent(List<string> content)
         {
+            string contents = "";
+            foreach (var line in content)
+                contents += line + '\n';
+
             Hashtable hashTable = new Hashtable(contents.Length);
 
             long i = 0;
@@ -20,8 +24,8 @@ namespace Domain.Models.Utilities
 
                 long hashResult = FofASCII(a);
                 long hashIndex = FofIndex(i);
-                string resultFinal = SecureLayer3(hashResult);
-                string indexFinal = SecureLayer3(hashIndex);
+                string resultFinal = EncodeResult(hashResult);
+                string indexFinal = EncodeResult(hashIndex);
 
                 long bktIndex = hashResult % contents.Length;
                 while (hashTable.ContainsKey(bktIndex) && hashTable.Count < contents.Length)
@@ -35,19 +39,24 @@ namespace Domain.Models.Utilities
                 i++;
             }
 
-            string fileContent = "";
+            string encryptedContent = "Skrambled EGG\n";
             foreach (DictionaryEntry ht in hashTable)
-                fileContent += ht.Value + "-";
+                encryptedContent += ht.Value + "-";
 
-            return fileContent;
+            return encryptedContent;
         }
 
-        public static string Decrypt(string encryptedContent)
+        public static string DecryptContent(List<string> content)
         {
+            content.RemoveAt(0);
+            string contents = "";
+            foreach (var line in content)
+                contents += line + '\n';
+
             string decryptedContent = "";
             SortedDictionary<long, long> dehashedValues = new SortedDictionary<long, long>();
 
-            string[] parsedContent = encryptedContent.Split('-');
+            string[] parsedContent = contents.Split('-');
             foreach (string encryptedPair in parsedContent)
             {
                 string decryptedPair = "";
@@ -149,7 +158,7 @@ namespace Domain.Models.Utilities
             return decryptedContent;
         }
 
-        public static string SecureLayer3(long y)
+        private static string EncodeResult(long y)
         {
             Stack<long> stack = new Stack<long>();
             while (y > 0)
@@ -198,7 +207,7 @@ namespace Domain.Models.Utilities
             return result;
         }
 
-        public static char GenerateSymbol()
+        private static char GenerateSymbol()
         {
             Random random = new Random();
             switch (random.Next(20))
@@ -244,7 +253,7 @@ namespace Domain.Models.Utilities
             }
         }
 
-        public static long FofASCII(long a, bool inverse = false)
+        private static long FofASCII(long a, bool inverse = false)
         {
             //f(a) = 2a^2 + 32
             if (inverse)
@@ -253,7 +262,7 @@ namespace Domain.Models.Utilities
             return (2 * (a * a)) + 32;
         }
 
-        public static long FofIndex(long i, bool inverse = false)
+        private static long FofIndex(long i, bool inverse = false)
         {
             //f(i) = 2(i+919) - 717
             if (inverse)

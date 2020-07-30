@@ -71,3 +71,20 @@ span
     margin-left: 15px;
     line-height: 36px;
 }
+
+.tooltip
+{
+    opacity:0;
+}
+
+@keyframes fd {
+    0% {opacity:0;}
+    50% {opacity:100;}
+    70% {opacity:100;}
+    100% {opacity:0;}
+}
+
+#fade{
+    animation-name: fd;
+    animation-duration: 2s;
+}
