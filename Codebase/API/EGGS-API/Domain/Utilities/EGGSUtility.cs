@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Utilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +8,7 @@ namespace Domain.Models.Utilities
 {
     public static class EGGSUtility
     {
-        public static string EncryptContent(List<string> content)
+        public static string EncryptContent(List<string> content, string publicKey)
         {
             string contents = "";
             foreach (var line in content)
@@ -39,7 +40,8 @@ namespace Domain.Models.Utilities
                 i++;
             }
 
-            string encryptedContent = "Skrambled EGG\n";
+            string encryptedContent = "Skrambled EGG\n" + publicKey + '\n';
+
             foreach (DictionaryEntry ht in hashTable)
                 encryptedContent += ht.Value + "-";
 
@@ -48,6 +50,7 @@ namespace Domain.Models.Utilities
 
         public static string DecryptContent(List<string> content)
         {
+            content.RemoveAt(0);
             content.RemoveAt(0);
             string contents = "";
             foreach (var line in content)

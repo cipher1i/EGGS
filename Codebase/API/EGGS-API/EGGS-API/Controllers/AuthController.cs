@@ -37,7 +37,7 @@ namespace EGGS_API.Controllers
 
                 user.Read(username, password);
 
-                return Ok(user);
+                return Ok(user.Email);
             }
             catch(Exception e)
             {

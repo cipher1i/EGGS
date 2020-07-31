@@ -16,6 +16,7 @@ namespace Access.Entities
         }
 
         public virtual DbSet<Ip> Ip { get; set; }
+        public virtual DbSet<Key> Key { get; set; }
         public virtual DbSet<Request> Request { get; set; }
         public virtual DbSet<User> User { get; set; }
 
@@ -58,6 +59,40 @@ namespace Access.Entities
                     .HasPrincipalKey<User>(p => p.Email)
                     .HasForeignKey<Ip>(d => d.Email)
                     .HasConstraintName("IP_FK");
+            });
+
+            modelBuilder.Entity<Key>(entity =>
+            {
+                entity.HasKey(e => e.Id)
+                    .HasName("KEY_PK")
+                    .IsClustered(false);
+
+                entity.ToTable("KEY");
+
+                entity.HasIndex(e => e.Key1)
+                    .HasName("UIX_KEY_KEY")
+                    .IsUnique()
+                    .IsClustered();
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.Email)
+                    .IsRequired()
+                    .HasMaxLength(345)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Key1)
+                    .IsRequired()
+                    .HasColumnName("Key")
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .IsFixedLength();
+
+                entity.HasOne(d => d.EmailNavigation)
+                    .WithMany(p => p.Key)
+                    .HasPrincipalKey(p => p.Email)
+                    .HasForeignKey(d => d.Email)
+                    .HasConstraintName("KEY_FK");
             });
 
             modelBuilder.Entity<Request>(entity =>

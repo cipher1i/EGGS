@@ -38,6 +38,7 @@ export class SigninComponent implements OnInit {
         this.error = "";
         sessionStorage.setItem('user', JSON.stringify(result)); 
         console.log('POST successful value returned in body', result); 
+        console.log('username: '+JSON.stringify(result));
         this.session = true; 
         setTimeout(()=>{this.router.navigate(['dash']);}, 3000);
       },

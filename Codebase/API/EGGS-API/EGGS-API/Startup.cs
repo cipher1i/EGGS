@@ -52,6 +52,7 @@ namespace EGGS_API
 
             services.AddDbContext<EGGSDBContext>(options => options.UseSqlServer(Configuration.GetConnectionString("EGGSDS")));
             services.AddScoped<IEGGSRepositoryUser, UserRepository>();
+            services.AddScoped<IEGGSRepositoryKey, KeyRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

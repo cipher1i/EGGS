@@ -15,10 +15,20 @@
         <!--Interaction-->
         <form>
             <input type="file" #DirInput id="picker" class="dirInput" (click)="checkUserCredentials()" (change)="getFolder(DirInput)" webkitDirectory multiple/>
-            <input type="button" id="upload" class="dirInput" (click)="upload()"/>
+            <input type="button" id="encrypt" class="dirInput" (click)="upload()"/>
             <input type="button" id="download" class="dirInput" (click)="download()"/>
             <input type="button" id="clipboard" class="dirInput" [cdkCopyToClipboard]="copy()" (click)="showTooltip()"/>
             
+            <mat-form-field *ngIf="goToDecrypt" appearance="outline" hideRequiredMarker>
+                <mat-label>Key</mat-label>
+                <input matInput [type]="hide ? 'password' : 'text'" [formControl]="keyFC" required/>
+                <button type="button" mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide key'" [attr.aria-pressed]="hide">
+                    <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+                </button>
+                <mat-error>A key is required to decrypt this folder</mat-error>
+            </mat-form-field>
+            <br/>
+
             <button mat-raised-button [color]="btnColor" [title]="btnDescription">
                 <mat-icon aria-hidden="false" aria-label="icon">{{icon}}</mat-icon>
                 <label [for]="labelFor">{{labelTxt}}</label>
