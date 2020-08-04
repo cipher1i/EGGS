@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Domain.Extensions;
@@ -34,8 +35,8 @@ namespace EGGS_API.Controllers
             {
                 string zipLocation = $"{Directory.GetCurrentDirectory()}/../../../Data";
                 string zipName = $"EGG-{userKey}.zip";
-
                 var file = Path.Combine(zipLocation, zipName);
+
                 return Ok(new FileStream(file, FileMode.Open, FileAccess.Read));
             }
             catch(UnauthorizedAccessException e)
@@ -57,49 +58,51 @@ namespace EGGS_API.Controllers
         {
             try
             {
-                /* VALIDATE FILES */
+                /* VALIDATE REQUEST */
                 var files = Request.Form.Files;
-                if (files.Any(f => f.Length == 0))
-                    return BadRequest();
+                if (files.Any(f => f.Length == 0) || string.IsNullOrEmpty(username))
+                    return BadRequest("Invalid username/file length");
 
                 /* CREATE TEMP SAVE PATH */
                 var path = Path.Combine($"{Directory.GetCurrentDirectory()}/../../..", "Resources");
                 string savePath = FileUtility.MakeUniqueDirectory(path, 0);
-                string pathToZip;
 
-                /* GENERATE RANDOM UNIQUE KEY TO IDENTITY USER AND MAKE ZIP */
-                KeyModel keyModel = new KeyModel(_repoReaper);
+                /* GENERATE UNIQUE KEY TO IDENTITY USER AND MAKE ZIP */
                 string key;
-                do
+                string ID;
+                using (KeyModel keyModel = new KeyModel(_repoReaper))
                 {
-                    key = Utility.GenerateUniqueString();
-                } while (keyModel.Read(key));
+                    do
+                    {
+                        key = Utility.GenerateUniqueString();
+                    } while (keyModel.Read(key));
 
-                foreach (var file in files)
-                {
-                    /* READ FILE CONTENTS */
-                    var contents = file.ReadAsList();
+                    foreach (var file in files)
+                    {
+                        /* READ FILE CONTENTS */
+                        List<string> contents = file.ReadAsList();
 
-                    /* ENCRYPT FILE CONTENTS WITH PUBLIC KEY */
-                    string convertedContent = EGGSUtility.EncryptContent(contents, key.Substring(10));
+                        /* ENCRYPT FILE CONTENTS WITH PUBLIC KEY */
+                        string convertedContent = EGGSUtility.EncryptContent(contents, key.Substring(10));
 
-                    /* SAVE ENCRYPTION TO NEW FILE */
-                    var filePath = Path.Combine(savePath, file.FileName);
-                    FileUtility.SaveToFile(filePath, convertedContent);
-                }
+                        /* SAVE ENCRYPTION TO NEW FILE */
+                        var filePath = Path.Combine(savePath, file.FileName);
+                        FileUtility.SaveToFile(filePath, convertedContent);
+                    }
 
-                /* USE PRIVATE KEY TO MAKE UNIQUE ZIP */
-                pathToZip = Path.Combine(savePath, "../../Data");
-                string ID = FileUtility.MakeUniqueZip("EGG", savePath, pathToZip);
+                    /* USE PRIVATE KEY TO MAKE UNIQUE ZIP */
+                    var pathToZip = Path.Combine(savePath, "../../Data");
+                    ID = FileUtility.MakeUniqueZip("EGG", savePath, pathToZip);
 
-                /* DISPOSE OF TEMP RESOURCES THAT WERE CREATED TO MAKE ZIP */
-                Directory.Delete(savePath, true);
+                    /* DISPOSE OF TEMP RESOURCES THAT WERE CREATED TO MAKE ZIP */
+                    Directory.Delete(savePath, true);
 
-                /* ADD THE SUCCESSFUL KEY TO DB */
-                keyModel.Email = username.TrimStart('\"').TrimEnd('\"');
-                keyModel.Key = key;
-                if (!keyModel.Create())
-                    return BadRequest("Unable to generate key");
+                    /* ADD THE SUCCESSFUL KEY TO DB */
+                    keyModel.Email = username.TrimStart('\"').TrimEnd('\"');
+                    keyModel.Key = key;
+                    if (!keyModel.Create())
+                        return StatusCode(500, $"Internal server error: Unable to generate key. Check username or key generator. Key must be less than 21 characters.");
+                }   
 
                 /* RETURN PRIVATE KEY WITH ZIP ID */
                 return StatusCode(201, key.Substring(0,10)+"+"+ID);
@@ -111,49 +114,52 @@ namespace EGGS_API.Controllers
         }
 
         [HttpPost("translate"), DisableRequestSizeLimit]
-        public IActionResult PostUpload([FromQuery] string username, [FromQuery] string privateKey)
+        public IActionResult PostTranslate([FromQuery] string username, [FromQuery] string privateKey)
         {
             try
             {
+                /* VALIDATE REQUEST */
+                var files = Request.Form.Files;
+                if (files.Any(f => f.Length == 0) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(privateKey))
+                    return BadRequest();
+
                 username = username.TrimStart('\"').TrimEnd('\"');
                 privateKey = privateKey.TrimStart('\"').TrimEnd('\"');
-
-                /* VALIDATE FILES */
-                var files = Request.Form.Files;
-                if (files.Any(f => f.Length == 0))
-                    return BadRequest();
 
                 /* CREATE TEMP SAVE PATH */
                 var path = Path.Combine($"{Directory.GetCurrentDirectory()}/../../..", "Resources");
                 string savePath = FileUtility.MakeUniqueDirectory(path, 0);
 
-                KeyModel keyModel = new KeyModel(_repoReaper);
-                foreach (var file in files)
+                using (KeyModel keyModel = new KeyModel(_repoReaper))
                 {
-                    /* READ FILE CONTENTS */
-                    var contents = file.ReadAsList();
-
-                    /* DECRYPT FILE CONTENTS */
-                    string convertedContent = "";
-                    if (contents.Count > 1 && contents[0] == "Skrambled EGG")
+                    foreach (var file in files)
                     {
-                        string key = privateKey + contents[1];
-                        bool successfulRead = keyModel.Read(key);
-                        if (!successfulRead || keyModel.Email != username)
+                        /* READ FILE CONTENTS */
+                        List<string> contents = file.ReadAsList();
+
+                        /* DECRYPT FILE CONTENTS */
+                        string convertedContent = "";
+                        if (contents.Count > 1 && contents[0] == "Skrambled EGG")
+                        {
+                            string key = privateKey + contents[1];
+                            
+                            bool successfulRead = keyModel.Read(key);
+                            if (!successfulRead || keyModel.Email != username)
+                                return BadRequest();
+
+                            convertedContent = EGGSUtility.DecryptContent(contents);
+                        }
+                        else
                             return BadRequest();
 
-                        convertedContent = EGGSUtility.DecryptContent(contents);
-                    }
-                    else
-                        return BadRequest();
-
-                    /* SAVE DECRYPTION TO NEW FILE */
-                    var filePath = Path.Combine(savePath, file.FileName);
-                    FileUtility.SaveToFile(filePath, convertedContent);
+                        /* SAVE DECRYPTION TO NEW FILE */
+                        var filePath = Path.Combine(savePath, file.FileName);
+                        FileUtility.SaveToFile(filePath, convertedContent);
+                    } 
                 }
-
+                    
                 /* USE KEY TO MAKE UNIQUE ZIP */
-                string pathToZip = Path.Combine(savePath, "../../Data");
+                var pathToZip = Path.Combine(savePath, "../../Data");
                 string ID = FileUtility.MakeUniqueZip("EGG", savePath, pathToZip);
 
                 /* DISPOSE OF TEMP RESOURCES THAT WERE ADDED TO CREATE ZIP */
@@ -179,6 +185,7 @@ namespace EGGS_API.Controllers
 
                 var file = Path.Combine(zipLocation, zipName);
                 System.IO.File.Delete(file);
+
                 return NoContent();
             }
             catch(UnauthorizedAccessException e)

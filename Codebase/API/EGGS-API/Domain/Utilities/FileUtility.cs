@@ -31,7 +31,7 @@ namespace Domain.Utilities
 
         public static string MakeUniqueZip(string zipName, string sourceDirectoryPath, string zipDestinationPath)
         {
-            string partialZipPath = Path.Combine(zipDestinationPath, zipName);
+            var partialZipPath = Path.Combine(zipDestinationPath, zipName);
             string fullZipPath;
             string uniqueStringID;
             do

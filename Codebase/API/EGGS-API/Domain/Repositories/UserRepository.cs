@@ -21,17 +21,24 @@ namespace Domain.Repositories
 
         public bool CreateUser(UserModel u)
         {
-            var user = new User
+            try
             {
-                Email = u.Email,
-                Password = u.Password,
-                FirstName = u.FirstName,
-                LastName = u.LastName
-            };
+                var user = new User
+                {
+                    Email = u.Email,
+                    Password = u.Password,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName
+                };
 
-            _dbContext.User.Add(user);
-            Save();
-            return true;
+                _dbContext.User.Add(user);
+                Save();
+                return true;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
         }
 
         public User ReadUser(string username, string password)

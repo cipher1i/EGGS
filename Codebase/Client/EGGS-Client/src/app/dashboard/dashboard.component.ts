@@ -19,5 +19,4 @@ export class DashboardComponent implements OnInit {
     sessionStorage.removeItem(key);
     this.router.navigate(['signin']);
   }
-
 }

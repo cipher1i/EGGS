@@ -2,11 +2,12 @@
 using Domain.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Domain.Models
 {
-    public class KeyModel
+    public class KeyModel : IDisposable
     {
         private readonly IEGGSRepositoryKey _repoReaper;
         public KeyModel(IEGGSRepositoryKey repoReaper)
@@ -69,5 +70,28 @@ namespace Domain.Models
             
             return list;
         }
+
+        #region IDisposable Support
+        private bool _disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _repoReaper.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 }

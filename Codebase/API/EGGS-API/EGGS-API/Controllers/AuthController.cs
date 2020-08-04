@@ -26,22 +26,24 @@ namespace EGGS_API.Controllers
         {
             try
             {
-                UserModel user = new UserModel(_repoReaper);
-
-                if (!user.Auth(username, password))
+                using (UserModel user = new UserModel(_repoReaper))
                 {
-                    user.Email = username;
-                    user.Password = password;
-                    user.Create();
-                }
+                    if (!user.Auth(username, password))
+                    {
+                        user.Email = username;
+                        user.Password = password;
+                        if (!user.Create())
+                            throw new Exception();
+                    }
 
-                user.Read(username, password);
+                    user.Read(username, password);
 
-                return Ok(user.Email);
+                    return Ok(user.Email);
+                }   
             }
             catch(Exception e)
             {
-                return StatusCode(500, $"Internal server error: {e}");
+                return StatusCode(500, $"Internal server error: {e.Message}");
             }
         }
     }

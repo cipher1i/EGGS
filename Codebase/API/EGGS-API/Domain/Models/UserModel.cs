@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection.Metadata.Ecma335;
+using Domain.Repositories;
+using Access.Entities;
 
 namespace Domain.Models
 {
-    public class UserModel
+    public class UserModel : IDisposable
     {
         private readonly IEGGSRepositoryUser _repoReaper;
         public UserModel(IEGGSRepositoryUser repoReaper)
@@ -80,5 +82,28 @@ namespace Domain.Models
             return _repoReaper.DeleteUser(username, password);
         }
         */
+
+        #region IDisposable Support
+        private bool _disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _repoReaper.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 }

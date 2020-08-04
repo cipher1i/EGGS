@@ -1,8 +1,10 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { FormGroup, FormGroupDirective, NgForm, FormControl, Validators } from '@angular/forms';
-import { HttpClient, HttpEventType } from '@angular/common/http';
+import { FormControl, Validators } from '@angular/forms';
+import { HttpClient, HttpEventType, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { saveAs } from 'file-saver';
+import { of } from 'rxjs';
+import { timeout, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-upload',
@@ -19,14 +21,18 @@ export class UploadComponent implements OnInit {
   btnDescription : string;
   labelTxt : string;
   labelFor : string;
+  fileEmpty : boolean;
   files : FileList;
+  filetype : boolean;
   receivedFiles : boolean;
   uploadProg : number;
   downloaded : boolean;
   decrypted : boolean;
   userKey : any;
+  zipID : string;
   copied : boolean;
-  keyFC: FormControl = new FormControl('', [Validators.required, Validators.minLength(10)]);
+  goToDecrypt : boolean;
+  keyFC : FormControl = new FormControl('', [Validators.required]);
 
   /* INIT */
   ////////////////////////////////////////////////////////////////////
@@ -37,23 +43,32 @@ export class UploadComponent implements OnInit {
       this.router.navigate(['dash']);
 
     this.reset();
+    this.filetype = false;
   }
   ////////////////////////////////////////////////////////////////////
 
   /* METHOD DEF */
+  ////////////////////////////////////////////////////////////////////
   //use ngOnDestroy instead of doThis
   @HostListener('window:beforeunload', ['$event'])
-  doThis($event)
+  onDestroy($event : any) : void
   {
     if(this.labelFor == "download" && this.zipID) 
     {
-      this.http.delete('https://localhost:44331/api/EGGS', {params: { userKey: this.zipID } })
-      .subscribe(()=>{
+      this.deleteResources('https://localhost:44331/api/EGGS', this.zipID);
+      $event.returnValue = 'Your data will be lost!';
+    }
+
+    return;
+  }
+
+  deleteResources(url : string, zipID : string)
+  {
+    this.http.delete(url, { params: { userKey: zipID } })
+      .subscribe(() => 
+      {
         sessionStorage.removeItem('user');
       });
-
-      $event.returnValue='Your data will be lost!';
-    }
   }
 
   reset() : void
@@ -65,6 +80,9 @@ export class UploadComponent implements OnInit {
     this.uploadProg = 0;
     this.downloaded = false;
     this.decrypted = false;
+    this.goToDecrypt = false;
+    this.zipID = "";
+    (<HTMLInputElement>document.getElementById('picker')).value = '';
   }
 
   setButton(type : string = "", item : string = "") : void
@@ -78,7 +96,7 @@ export class UploadComponent implements OnInit {
         this.btnDescription = item;
         this.btnColor = "accent";
         return;
-      case "deskarmble":
+      case "deskramble":
         this.icon = "source";
         this.labelFor = "encrypt";
         this.labelTxt = "Deskramble";
@@ -119,102 +137,110 @@ export class UploadComponent implements OnInit {
     return true;
   }
 
-  goToDecrypt : boolean = false;
   getFolder(directory : any) : void
   {
+    this.fileEmpty = false;
+
     this.files = directory.files;
     if(this.files.length < 1)
       return;
 
     this.receivedFiles = true;
-    
-    Array.from(this.files).forEach(f => {
-      const reader = new FileReader();
 
-      reader.onload = () => {
+    Array.from(this.files).forEach(f => 
+    {
+      // use this to catch file types that have failed the support test
+      // reduces processing time and memory in resources folder
+      switch((<any>f).webkitRelativePath.split('.')[(<any>f).webkitRelativePath.split('.').length - 1].toLowerCase())
+      {
+        case 'pdf':
+        case 'jpg':
+        case 'png':
+        case 'exe':
+        case 'dmg':
+        case 'msi':
+        case 'map':
+        case 'config':
+        case '__ivy_ngcc_bak':
+          this.filetype = true;
+          this.reset();
+          return;
+        default:
+          this.filetype = false;
+          break;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => 
+      {
+        if(reader.result == null || reader.result == "")
+        {
+          //file empty
+          this.fileEmpty = true;
+          this.reset();
+          return;
+        }
+
         var firstline = (<string>reader.result).split('\n').shift();
         if(firstline == "Skrambled EGG")
-        {
           this.goToDecrypt = true;
-          //ask for key part1 before decrypt
-          //post full file with key and user to decrypt
-          //get user from db
-          //validate part 1 of user key against posted key
-          //validate part 2 of user key against key in file after 'Skrambled EGG'
-          //validate for all files
-          //decrypt and return files if valid
-          //otherwise return failure response
-        }
         else
         {
           this.goToDecrypt = false;
+          this.setButton('skramble', directory.files[0].webkitRelativePath.split('/')[0]);
           return;
         }
       }
+
       reader.readAsText(f);
     });
-    
-    if(this.goToDecrypt)
-      this.setButton('decrypt', directory.files[0].webkitRelativePath.split('/')[0]);
-    else
-      this.setButton('skramble', directory.files[0].webkitRelativePath.split('/')[0]);
+
+    if(this.labelTxt != 'Skramble' && !this.filetype && (<HTMLInputElement>document.getElementById('picker')).value != '')
+      this.setButton('deskramble', directory.files[0].webkitRelativePath.split('/')[0]);
 
     this.copied = false;
   }
 
-  zipID : string;
   public upload() : any
   {
     if(this.files.length === 0 || (this.goToDecrypt && this.keyFC.invalid)) 
+    {
+      this.keyFC.markAsTouched();
       return;
+    }
 
     const formData : FormData = new FormData();
     Array.from(this.files).map((file, index) =>{
       return formData.append('file'+index, file, file.name);
     });
-    
+
     if(this.goToDecrypt)
-    {
-      this.http.post('https://localhost:44331/api/EGGS/translate', formData, {params: { username: sessionStorage.getItem('user'), privateKey: this.keyFC.value }, reportProgress: true, observe: 'events', responseType: 'json'})
-      .subscribe(event =>{
-        if(event.type === HttpEventType.UploadProgress)
-        {
-          this.uploadProg = Math.round((event.loaded / event.total)*this.files.length);
-          if(this.uploadProg == this.files.length)
-          {
-            this.receivedFiles = false;
-            this.setButton("download");
-          }
-        }
-        if(event.type === HttpEventType.Response)
-        {
-          this.userKey = event.body;
-          const parsedKey = this.userKey.toString().split('+');
-          if(parsedKey.length > 1)
-          {
-            this.userKey = parsedKey[0];
-            this.zipID = parsedKey[1];
-            const rawKey = this.userKey.split('-');
-            if(rawKey.length > 1)
-            {
-              this.userKey = rawKey[0];
-              this.decrypted = true;
-            }
-          }
-        }
-      });
-    }
+      this.postTranslate(formData);
     else
-    {
-      this.http.post('https://localhost:44331/api/EGGS/upload', formData, {params: { username: sessionStorage.getItem('user') }, reportProgress: true, observe: 'events', responseType: 'json'})
-      .subscribe(event =>{
+      this.postUpload(formData);
+  }
+
+  postTranslate(formData : FormData)
+  {
+    this.http.post('https://localhost:44331/api/EGGS/translate', formData, {params: { username: sessionStorage.getItem('user'), privateKey: this.keyFC.value }, reportProgress: true, observe: 'events', responseType: 'json'})
+      .pipe(
+        timeout(20000),
+        catchError(e => {
+          console.log('upload failure');
+          this.filetype = true;
+          this.reset();
+          return of(e);
+        })
+      )
+      .subscribe(event =>
+      {
         if(event.type === HttpEventType.UploadProgress)
         {
           this.uploadProg = Math.round((event.loaded / event.total)*this.files.length);
           if(this.uploadProg == this.files.length)
           {
             this.receivedFiles = false;
-            this.setButton("download");
+            this.goToDecrypt = false;
           }
         }
         if(event.type === HttpEventType.Response)
@@ -232,9 +258,55 @@ export class UploadComponent implements OnInit {
               this.decrypted = true;
             }
           }
+
+          this.filetype = false;
+          this.setButton("download");
+        }
+        //if stat 400, file empty
+      });
+  }
+
+  postUpload(formData : FormData)
+  {
+    this.http.post('https://localhost:44331/api/EGGS/upload', formData, {params: { username: sessionStorage.getItem('user') }, reportProgress: true, observe: 'events', responseType: 'json'})
+      .pipe(
+        timeout(20000),
+        catchError(e => {
+          console.log('upload failure');
+          this.filetype = true;
+          this.reset();
+          return of(e);
+        })
+      )
+      .subscribe(event =>{
+        if(event.type === HttpEventType.UploadProgress)
+        {
+          this.uploadProg = Math.round((event.loaded / event.total)*this.files.length);
+          if(this.uploadProg == this.files.length)
+          {
+            this.receivedFiles = false;
+            this.goToDecrypt = false;
+          }
+        }
+        if(event.type === HttpEventType.Response)
+        {
+          this.userKey = event.body;
+          const parsedKey = this.userKey.toString().split('+');
+          if(parsedKey.length > 1)
+          {
+            this.userKey = parsedKey[0];
+            this.zipID = parsedKey[1];
+            const rawKey = this.userKey.split('-');
+            if(rawKey.length > 1)
+            {
+              this.userKey = rawKey[0];
+              this.decrypted = true;
+            }
+          }
+          this.filetype = false;
+          this.setButton("download");
         }
       });
-    }
   }
 
   public download() : void
@@ -248,12 +320,11 @@ export class UploadComponent implements OnInit {
         if(!this.decrypted)
         {
           this.setButton("copy", this.userKey);
-          this.primaryText = "This is your key. Save this to your clipboard and use it to decrypt your code.";
+          this.primaryText = "This is your key. Save it to your clipboard and use it to deskramble your code.";
         }
         else
         {
           this.reset();
-          (<HTMLInputElement>document.getElementById('picker')).value = '';
         }
       });
       saveAs(blob,'EGGS');
@@ -268,7 +339,6 @@ export class UploadComponent implements OnInit {
   public showTooltip()
   {
     this.reset();
-    (<HTMLInputElement>document.getElementById('picker')).value = '';
 
     this.copied = true;
     return this.copied;

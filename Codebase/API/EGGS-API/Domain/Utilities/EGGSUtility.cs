@@ -11,12 +11,11 @@ namespace Domain.Models.Utilities
         public static string EncryptContent(List<string> content, string publicKey)
         {
             string contents = "";
-            foreach (var line in content)
+            foreach (string line in content)
                 contents += line + '\n';
 
-            Hashtable hashTable = new Hashtable(contents.Length);
-
             long i = 0;
+            Hashtable hashTable = new Hashtable(contents.Length);
             foreach (char c in contents)
             {
                 long a = Convert.ToInt32(c);
@@ -29,6 +28,7 @@ namespace Domain.Models.Utilities
                 string indexFinal = EncodeResult(hashIndex);
 
                 long bktIndex = hashResult % contents.Length;
+
                 while (hashTable.ContainsKey(bktIndex) && hashTable.Count < contents.Length)
                     bktIndex = (bktIndex == (contents.Length - 1)) ? ((bktIndex + 1) % contents.Length) : (bktIndex + 1);
 
@@ -50,22 +50,23 @@ namespace Domain.Models.Utilities
 
         public static string DecryptContent(List<string> content)
         {
-            content.RemoveAt(0);
-            content.RemoveAt(0);
-            string contents = "";
-            foreach (var line in content)
-                contents += line + '\n';
+            SortedDictionary<long, long> unhashedValues = new SortedDictionary<long, long>();
 
-            string decryptedContent = "";
-            SortedDictionary<long, long> dehashedValues = new SortedDictionary<long, long>();
+            /* REMOVE HEADERS FROM ENCRYPTED FILE CONTENT */
+            content.RemoveAt(0);
+            content.RemoveAt(0);
+
+            string contents = "";
+            foreach (string line in content)
+                contents += line + '\n';
 
             string[] parsedContent = contents.Split('-');
             foreach (string encryptedPair in parsedContent)
             {
                 string decryptedPair = "";
-                foreach (char eC in encryptedPair)
+                foreach (char e in encryptedPair)
                 {
-                    switch (eC)
+                    switch (e)
                     {
                         case '!':
                         case '@':
@@ -86,55 +87,54 @@ namespace Domain.Models.Utilities
                         case '?':
                         case ',':
                         case '.':
-                            decryptedPair += eC.ToString();
+                            decryptedPair += e;
                             continue;
                         default:
                             break;
                     }
 
-                    switch (char.ToLower(eC))
+                    switch (char.ToLower(e))
                     {
                         case 'q':
-                            decryptedPair += "1";
+                            decryptedPair += '1';
                             break;
                         case 'w':
-                            decryptedPair += "2";
+                            decryptedPair += '2';
                             break;
                         case 'e':
-                            decryptedPair += "3";
+                            decryptedPair += '3';
                             break;
                         case 'r':
-                            decryptedPair += "4";
+                            decryptedPair += '4';
                             break;
                         case 't':
-                            decryptedPair += "5";
+                            decryptedPair += '5';
                             break;
                         case 'y':
-                            decryptedPair += "6";
+                            decryptedPair += '6';
                             break;
                         case 'u':
-                            decryptedPair += "7";
+                            decryptedPair += '7';
                             break;
                         case 'i':
-                            decryptedPair += "8";
+                            decryptedPair += '8';
                             break;
                         case 'o':
-                            decryptedPair += "9";
+                            decryptedPair += '9';
                             break;
                         case 'p':
-                            decryptedPair += "0";
+                            decryptedPair += '0';
                             break;
                         default:
                             break;
                     }
-
-
                 }
-                var parsedPair = decryptedPair.Split('!', '@', '#', '$', '%', '^', '&', '*', '_', '+', '=', '`', '~', '|', ';', ':', '?', ',', '.');
 
+                int i = 0;
                 long index = 0;
                 long value = 0;
-                int i = 0;
+                string[] parsedPair = decryptedPair.Split('!', '@', '#', '$', '%', '^', '&', '*', '_', '+', '=', '`', '~', '|', ';', ':', '?', ',', '.');
+                
                 foreach (string hashedValue in parsedPair)
                 {
                     if (long.TryParse(hashedValue, out long v))
@@ -142,18 +142,17 @@ namespace Domain.Models.Utilities
                         if (i > 0)
                         {
                             value = FofASCII(v, true);
-                            dehashedValues.Add(index, value);
+                            unhashedValues.Add(index, value);
                             break;
                         }
-
                         index = FofIndex(v, true);
                     }
-
                     i++;
                 }
             }
 
-            foreach (var pair in dehashedValues)
+            string decryptedContent = "";
+            foreach (var pair in unhashedValues)
             {
                 decryptedContent += Convert.ToChar(pair.Value);
             }
@@ -164,11 +163,13 @@ namespace Domain.Models.Utilities
         private static string EncodeResult(long y)
         {
             Stack<long> stack = new Stack<long>();
+            
             while (y > 0)
             {
                 stack.Push(y % 10);
                 y /= 10;
             }
+
             string result = "";
             while (stack.Count > 0)
             {
